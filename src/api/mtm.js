@@ -116,19 +116,35 @@ export default class MusicAPI {
    * Get related media of a song given an id.
    */
   static getSongMedia = (id) => {
-    let requestUrl = BASE_URL + "/songs/" + id + "/media?n=4";
+    let billboard_URL = "http://localhost:9006/billboard/music/song/"+ id;
 
-    return axios.get(requestUrl)
-      .then(function (res) {
+    
+    return axios.get(billboard_URL)
+      .then(function (response) {
 
-        let result = res.data.data;
-        let media = [];
+        let result = response.data.song;
+        let name = result.song_name;
+        let artist = result.display_artist;
+        
+        let media = []; 
 
-        result.forEach((mediaObject) => {
-          media.push(new MediaItem(mediaObject.url, mediaObject.caption, mediaObject.thumbnail));
-        });
+        let search_URL = "http://localhost:9009/googleapis/customsearch/v1?key=AIzaZyAHVa03D6aEAPH_AGR6-PJGKILKxJU-VyY&num=4&searchType=image&cx=001770674074172668715:am0dsqea_hey&q="+name+" "+artist;
 
-        return media;
+        return axios.get(search_URL)
+          .then(function (res2) {
+
+            console.log(res2.data);
+             let result2 = res2.data.items; 
+
+            result2.forEach((mediaObject) => {
+              media.push(new MediaItem(mediaObject.link, mediaObject.title, mediaObject.image.thumbnailLink));
+            });
+
+          return media;
+          })
+          .catch(function (error) {
+            MusicAPI.handleError(error);
+          });
       })
       .catch(function (error) {
         MusicAPI.handleError(error);
