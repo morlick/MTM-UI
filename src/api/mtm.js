@@ -69,11 +69,9 @@ export default class MusicAPI {
            return axios.get(spotify_URL2)
              .then(function (response3) {
               let result3 = response3.data;
-              console.log(response2.data);
               let song = new Song(id, result2.name, result.song.display_artist,
                 result2.album.name, result3.release_date, result2.duration_ms,
                 result2.peview_url, result2.album.images[0].url);
-              console.log(song);
 
               return song;
             })
@@ -96,15 +94,15 @@ export default class MusicAPI {
    * Get historical ranks of a song given an id
    */
   static getSongRankings = (id) => {
-    let requestUrl = BASE_URL + "/songs/" + id + "/ranks";
+    let requestUrl = "http://localhost:9006/billboard/music/song/" + id;
 
     return axios.get(requestUrl)
       .then(function (res) {
-        let result = res.data.data;
+        let result = res.data;
         let rankings = [];
 
-        result.forEach((ranking) => {
-          rankings.push(new SongRank(ranking.endDate, ranking.rank));
+        result.rankings.forEach((ranking) => {
+          rankings.push(new SongRank(ranking.date, ranking.rank));
         });
 
         return rankings;
