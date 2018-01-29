@@ -28,10 +28,9 @@ export default class MusicAPI {
    */
   static getChart = (date) => {
 
-    let bilboard_URL = "http://localhost:9006/billboard/charts/"+ date + "?filter=song";
-    let requestUrl = BASE_URL + "/charts/" + date;
+    let billboard_URL = "http://localhost:9006/billboard/charts/"+ date + "?filter=song";
 
-    return axios.get(bilboard_URL)
+    return axios.get(billboard_URL)
       .then(function (res) {
 
         let result = res.data;
@@ -52,18 +51,40 @@ export default class MusicAPI {
    * Get song information given an id
    */
   static getSongInfo = (id) => {
-    let requestUrl = BASE_URL + "/songs/" + id;
+    //let requestUrl = BASE_URL + "/songs/" + id;
+    let billboard_URL = "http://localhost:9006/billboard/music/song/"+ id;
 
-    return axios.get(requestUrl)
+    return axios.get(billboard_URL)
       .then(function (response) {
 
-        let result = response.data.data;
+        let result = response.data;
+        let spotify_URL = "http://localhost:9007/spotify/v1/tracks/" + response.data.song.spotify_id;
 
-        let song = new Song(id, result.name, result.artist,
-                    result.albumName, result.albumRelease, result.duration,
-                    result.url, result.image);
+        return axios.get(spotify_URL)
+          .then(function (response2) {
 
-        return song;
+           let result2 = response2.data;
+
+           let spotify_URL2 = "http://localhost:9007/spotify/v1/albums/" + response2.data.album.id;
+           return axios.get(spotify_URL2)
+             .then(function (response3) {
+              let result3 = response3.data;
+              console.log(response2.data);
+              let song = new Song(id, result2.name, result.song.display_artist,
+                result2.album.name, result3.release_date, result2.duration_ms,
+                result2.peview_url, result2.album.images[0].url);
+              console.log(song);
+
+              return song;
+            })
+             .catch(function (error) {
+              MusicAPI.handleError(error);
+            });
+
+          })
+          .catch(function (error) {
+            MusicAPI.handleError(error);
+          });
 
       })
       .catch(function (error) {
