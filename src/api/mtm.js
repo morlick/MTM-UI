@@ -28,16 +28,17 @@ export default class MusicAPI {
    */
   static getChart = (date) => {
 
+    let bilboard_URL = "http://localhost:9006/billboard/charts/"+ date + "?filter=song";
     let requestUrl = BASE_URL + "/charts/" + date;
 
-    return axios.get(requestUrl)
+    return axios.get(bilboard_URL)
       .then(function (res) {
 
-        let result = res.data.data;
+        let result = res.data;
         let chart = [];
 
         result.forEach((chartItem) => {
-          chart.push(new ChartPosition(chartItem.rank, chartItem.songId, chartItem['song.name'], chartItem['song.artist']));
+          chart.push(new ChartPosition(chartItem['rank'], chartItem['song_id'], chartItem['song_name'], chartItem['display_artist']));
         });
 
         return chart;
